@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:scholrflutter/views/LoginScreen.dart';
 import 'package:scholrflutter/views/CompanySelectionScreen.dart';
+import 'package:scholrflutter/views/ScholarshipDetails.dart';
 import 'package:scholrflutter/views/ScholarshipsHome.dart';
 import 'package:scholrflutter/views/SignUpScreen.dart';
 
@@ -33,7 +34,8 @@ class MyApp extends StatelessWidget {
           '/CompanySelection': (context) => const CompanySelectionScreen(),
           '/register': (context) => const SignUpScreen(),
           '/home_apoderado':(context) => const homeApoderado(),
-          '/scholarships':(context) => const ScholarshipsHome()
+          '/scholarships':(context) => const ScholarshipsHome(),
+          '/scholarshipdetails':(context) => const ScholarshipDetails()
         },
       ),
     );
