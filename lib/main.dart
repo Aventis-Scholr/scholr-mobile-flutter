@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Scholr Flutter',
         debugShowCheckedModeBanner: false,
-        initialRoute: '/postulantlist',
+        initialRoute: '/login',
         routes: {
           '/login': (context) => const LoginScreen(),
           '/CompanySelection': (context) => const CompanySelectionScreen(),
