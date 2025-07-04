@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import 'package:scholrflutter/views/LoginScreen.dart';
 import 'package:scholrflutter/views/CompanySelectionScreen.dart';
+import 'package:scholrflutter/views/PostulantList.dart';
+import 'package:scholrflutter/views/ScholarshipDetails.dart';
 import 'package:scholrflutter/views/ScholarshipsHome.dart';
 import 'package:scholrflutter/views/SignUpScreen.dart';
 
@@ -27,13 +29,15 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Scholr Flutter',
         debugShowCheckedModeBanner: false,
-        initialRoute: '/scholarships',
+        initialRoute: '/postulantlist',
         routes: {
           '/login': (context) => const LoginScreen(),
           '/CompanySelection': (context) => const CompanySelectionScreen(),
           '/register': (context) => const SignUpScreen(),
           '/home_apoderado':(context) => const homeApoderado(),
-          '/scholarships':(context) => const ScholarshipsHome()
+          '/scholarships':(context) => const ScholarshipsHome(),
+          '/scholarshipdetails':(context) => const ScholarshipDetails(),
+          '/postulantlist':(context) => const PostulantList()
         },
       ),
     );
