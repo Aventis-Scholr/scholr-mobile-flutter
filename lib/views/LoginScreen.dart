@@ -32,11 +32,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (viewModel.loginSuccess) {
       final roles = await PreferenceManager.getUserRoles();
-      if (roles != null && roles.contains("ROLE_APODERADO")) {
+      /*if (roles != null && roles.contains("ROLE_APODERADO")) {
         Navigator.pushReplacementNamed(context, '/home_apoderado');
       } else if (roles != null && roles.contains("ROLE_DOCENTE")) {
         Navigator.pushReplacementNamed(context, '/home_docente');
-      }
+      }*/
+
+      Navigator.pushNamed(context, '/scholarships');
+
       // Agrega más roles si es necesario
     }
   }

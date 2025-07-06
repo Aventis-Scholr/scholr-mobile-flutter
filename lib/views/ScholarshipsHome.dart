@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:scholrflutter/bloc/ScholarshipsBloc.dart';
 import 'package:scholrflutter/components/CustomAppBar.dart';
 import 'package:scholrflutter/models/scholarship.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 const List<String> list = <String>['','TOTAL', 'PARCIAL'];
 
@@ -13,6 +15,14 @@ class ScholarshipsHome extends StatefulWidget {
 }
 
 class _ScholarshipsHomeState extends State<ScholarshipsHome> {
+
+  final ScholarshipsBloc scholarshipsBloc = ScholarshipsBloc();
+
+  @override
+  void initState() {
+    super.initState();
+    scholarshipsBloc.add(ScholarshipsInitialFetchEvent());
+  }
 
   // Colores personalizados
   final Color primaryBrown = const Color(0xFF765532);
@@ -100,7 +110,33 @@ class _ScholarshipsHomeState extends State<ScholarshipsHome> {
             ),
           ),
           SizedBox(height: 15.0),
-          ScholarshipTile(scholarship: Scholarship())
+          Expanded(
+            child: BlocBuilder<ScholarshipsBloc, ScholarshipsState>(
+              bloc: scholarshipsBloc,
+              builder: (context, state) {
+                if (state is ScholarshipsFetchingSuccessfulState) {
+                  if (state.scholarships.isEmpty) {
+                    return Center(child: Text("No hay becas disponibles."));
+                  }
+
+                  return ListView.builder(
+                    itemCount: state.scholarships.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
+                        child: ScholarshipTile(scholarship: state.scholarships[index]),
+                      );
+                    },
+                  );
+                } else if (state is ScholarshipsInitial) {
+                  return Center(child: CircularProgressIndicator());
+                } else {
+                  return Center(child: Text("Error cargando las becas."));
+                }
+              },
+            ),
+          )
+
         ],
       ),
     );
@@ -114,33 +150,80 @@ class ScholarshipTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 150.0,
-      width: 300.0,
-      decoration: BoxDecoration(
-        color: Color(0xFFf4c542),
-        border: Border.all(
-          color: Colors.black,
-          width: 1.5
-        )
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 300,
-            height: 45.0,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                bottom: BorderSide(
-                    color: Colors.black,
-                    width: 1.5
-                ),
-              )
-            ),
+    return InkWell(
+      onTap: () {
+        // You can modify this to navigate or show more info
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Seleccionaste: ${scholarship.name}')),
+        );
+      },
+      child: Container(
+        height: 150.0,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Color(0xFFf4c542),
+          border: Border.all(
+            color: Colors.black,
+            width: 1.5,
           ),
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // White section with scholarship name
+            Container(
+              width: double.infinity,
+              height: 45.0,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.black,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Text(
+                scholarship.name,
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+
+            // Yellow section with type and status
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Tipo: ${scholarship.scholarshipType}",
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "Estado: ${scholarship.scholarshipStatus}",
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
 }
+
