@@ -22,7 +22,7 @@ class ScholarshipDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => ApoderadoBloc(
-        repository: ApoderadoRepository(httpClient: http.Client()),
+        repository: ApoderadoRepository(),
       )..add(FetchApoderados(scholarship.id)),
       child: ScholarshipDetailsView(scholarship: scholarship),
     );
@@ -99,7 +99,7 @@ class ScholarshipDetailsView extends StatelessWidget {
                     children: state.apoderados.map((apoderado) {
                       return GestureDetector(
                         onTap: () {
-                          // Handle apoderado tap here
+                          Navigator.pushNamed(context, '/info_apoderado', arguments: apoderado.id);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Clicked on ${apoderado.name}')),
                           );

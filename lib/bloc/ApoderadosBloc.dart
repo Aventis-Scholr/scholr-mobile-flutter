@@ -16,5 +16,6 @@ class ApoderadoBloc extends Bloc<ApoderadoEvent, ApoderadoState> {
         emit(ApoderadoError('Failed to load apoderados'));
       }
     });
+
   }
 }

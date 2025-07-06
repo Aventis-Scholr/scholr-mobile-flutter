@@ -1,5 +1,7 @@
 
 
+import 'package:scholrflutter/models/apoderado.dart';
+
 abstract class ApoderadoEvent {
   const ApoderadoEvent();
 

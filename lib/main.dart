@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scholrflutter/models/apoderado.dart';
 import 'package:scholrflutter/views/CollaboratorInfoScreen.dart';
 
 import 'package:scholrflutter/views/LoginScreen.dart';
@@ -34,13 +35,16 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Scholr Flutter',
         debugShowCheckedModeBanner: false,
-        initialRoute: '/info_postulante',
+        initialRoute: '/login',
         routes: {
           '/login': (context) => const LoginScreen(),
           '/CompanySelection': (context) => const CompanySelectionScreen(),
           '/register': (context) => const SignUpScreen(),
           '/home_apoderado':(context) => const homeApoderado(),
-          '/info_apoderado':(context) => const CollaboratorInfoScreen(),
+          '/info_apoderado':(context) {
+            final dataApoderadoId = ModalRoute.of(context)!.settings.arguments as int;
+            return CollaboratorInfoScreen(dataApoderadoId: dataApoderadoId);
+          },
           '/info_postulante':(context) => const PostulanteInfoScreen(),
           '/solicitud_rechazada':(context) => const SolicitudRechazadaScreen(),
           '/scholarships':(context) => const ScholarshipsHome(),
