@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scholrflutter/views/CollaboratorInfoScreen.dart';
 
 import 'package:scholrflutter/views/LoginScreen.dart';
 import 'package:scholrflutter/views/CompanySelectionScreen.dart';
+import 'package:scholrflutter/views/PostulanteInfoScreen.dart';
 import 'package:scholrflutter/views/PostulantList.dart';
 import 'package:scholrflutter/views/ScholarshipDetails.dart';
 import 'package:scholrflutter/views/ScholarshipsHome.dart';
@@ -10,6 +12,7 @@ import 'package:scholrflutter/views/SignUpScreen.dart';
 
 import 'package:scholrflutter/viewmodels/login_viewmodel.dart';
 import 'package:scholrflutter/viewmodels/signup_viewmodel.dart';
+import 'package:scholrflutter/views/SolicitudRechazadaScreen.dart';
 import 'package:scholrflutter/views/homeApoderado.dart';
 
 void main() {
@@ -29,12 +32,15 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Scholr Flutter',
         debugShowCheckedModeBanner: false,
-        initialRoute: '/login',
+        initialRoute: '/info_postulante',
         routes: {
           '/login': (context) => const LoginScreen(),
           '/CompanySelection': (context) => const CompanySelectionScreen(),
           '/register': (context) => const SignUpScreen(),
           '/home_apoderado':(context) => const homeApoderado(),
+          '/info_apoderado':(context) => const CollaboratorInfoScreen(),
+          '/info_postulante':(context) => const PostulanteInfoScreen(),
+          '/solicitud_rechazada':(context) => const SolicitudRechazadaScreen(),
           '/scholarships':(context) => const ScholarshipsHome(),
           '/scholarshipdetails':(context) => const ScholarshipDetails(),
           '/postulantlist':(context) => const PostulantList()
