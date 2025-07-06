@@ -152,9 +152,10 @@ class ScholarshipTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // You can modify this to navigate or show more info
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Seleccionaste: ${scholarship.name}')),
+        Navigator.pushNamed(
+            context,
+            "/scholarshipdetails",
+          arguments: scholarship
         );
       },
       child: Container(

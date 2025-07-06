@@ -1,73 +1,125 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scholrflutter/components/CustomAppBar.dart';
 import 'package:scholrflutter/models/apoderado.dart';
+import 'package:scholrflutter/models/scholarship.dart';
 
-class ScholarshipDetails extends StatefulWidget {
-  const ScholarshipDetails({super.key});
+import 'package:http/http.dart' as http;
 
-  @override
-  State<ScholarshipDetails> createState() => _ScholarshipDetailsState();
-}
+import '../bloc/ApoderadosBloc.dart';
+import '../bloc/ApoderadosEvent.dart';
+import '../bloc/ApoderadosState.dart';
+import '../repository/ApoderadoRepos.dart';
 
-class _ScholarshipDetailsState extends State<ScholarshipDetails> {
-  final Color backgroundColor = const Color(0xFFDCF1F9);
+
+
+class ScholarshipDetails extends StatelessWidget {
+  final Scholarship scholarship;
+
+  const ScholarshipDetails({super.key, required this.scholarship});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: CustomAppBar(titleText: 'Beca'),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(height: 15.0),
-          Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: Text(
-                'Beca',
-                style: TextStyle(
-                    fontSize: 30.0
-                )
-            ),
-          ),
-          SizedBox(
-            height: 24,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(
-                    color: Colors.black,
-                    width: 1.7
-                  )
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: Text(
-                'Lista de Colaboradores',
-                style: TextStyle(
-                    fontSize: 22.0
-                )
-            ),
-          ),
-          SizedBox(height: 24),
-          ApoderadoTile(apoderado: Apoderado())
-        ],
-      ),
+    return BlocProvider(
+      create: (_) => ApoderadoBloc(
+        repository: ApoderadoRepository(httpClient: http.Client()),
+      )..add(FetchApoderados(scholarship.id)),
+      child: ScholarshipDetailsView(scholarship: scholarship),
     );
   }
 }
 
+class ScholarshipDetailsView extends StatelessWidget {
+  final Scholarship scholarship;
+
+  const ScholarshipDetailsView({super.key, required this.scholarship});
+
+  @override
+  Widget build(BuildContext context) {
+    final Color backgroundColor = const Color(0xFFDCF1F9);
+
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: CustomAppBar(titleText: 'Beca'),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 15.0),
+            Padding(
+              padding: const EdgeInsets.only(left: 15),
+              child: Text(
+                scholarship.name,
+                style: const TextStyle(fontSize: 30.0),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 300,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.black, width: 1.7),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Requisitos:", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      ...scholarship.requirements.map((req) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          "- ${req.name}: ${req.description} ${req.isMandatory ? '(Obligatorio)' : '(Opcional)'}",
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      )),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Padding(
+              padding: EdgeInsets.only(left: 15),
+              child: Text(
+                'Lista de Colaboradores',
+                style: TextStyle(fontSize: 22.0),
+              ),
+            ),
+            const SizedBox(height: 24),
+            BlocBuilder<ApoderadoBloc, ApoderadoState>(
+              builder: (context, state) {
+                if (state is ApoderadoLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is ApoderadoLoaded) {
+                  return Column(
+                    children: state.apoderados.map((apoderado) {
+                      return GestureDetector(
+                        onTap: () {
+                          // Handle apoderado tap here
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Clicked on ${apoderado.name}')),
+                          );
+                        },
+                        child: ApoderadoTile(apoderado: apoderado),
+                      );
+                    }).toList(),
+                  );
+                } else if (state is ApoderadoError) {
+                  return Center(child: Text(state.message));
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class ApoderadoTile extends StatelessWidget {
   final Apoderado apoderado;
@@ -76,68 +128,47 @@ class ApoderadoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          height: 60,
-          width: 350,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(
-              color: Colors.black,
-              width: 1.5
-            )
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  SizedBox(width: 14),
-                  Text(
-                    "Nombre",
-                    style: TextStyle(
-                      fontSize: 23
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            height: 60,
+            width: 350,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    apoderado.name,
+                    style: const TextStyle(fontSize: 23),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  height: 60,
+                  width: 100,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFf4c542),
+                    border: Border(left: BorderSide(width: 1.5, color: Colors.black)),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "Ver",
+                      style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  SizedBox(width: 149),
-                  Container(
-                    height: 57,
-                    width: 100,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFf4c542),
-                      border: Border(
-                        left: BorderSide(
-                          width: 1.5,
-                          color: Colors.black
-                        )
-                      )
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                                "Ver",
-                              style: TextStyle(
-                                fontSize: 23,
-                                fontWeight: FontWeight.bold
-                              ),
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              )
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

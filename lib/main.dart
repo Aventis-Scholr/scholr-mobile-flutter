@@ -15,6 +15,8 @@ import 'package:scholrflutter/viewmodels/signup_viewmodel.dart';
 import 'package:scholrflutter/views/SolicitudRechazadaScreen.dart';
 import 'package:scholrflutter/views/homeApoderado.dart';
 
+import 'models/scholarship.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -42,7 +44,10 @@ class MyApp extends StatelessWidget {
           '/info_postulante':(context) => const PostulanteInfoScreen(),
           '/solicitud_rechazada':(context) => const SolicitudRechazadaScreen(),
           '/scholarships':(context) => const ScholarshipsHome(),
-          '/scholarshipdetails':(context) => const ScholarshipDetails(),
+          '/scholarshipdetails': (context) {
+            final scholarship = ModalRoute.of(context)!.settings.arguments as Scholarship;
+            return ScholarshipDetails(scholarship: scholarship);
+          },
           '/postulantlist':(context) => const PostulantList()
         },
       ),
