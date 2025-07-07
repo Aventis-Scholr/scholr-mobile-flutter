@@ -34,7 +34,8 @@ class ApoderadoRepository {
       throw Exception('Error loading Data Apoderado');
     }
 
-    final data = jsonDecode(response.body) as DataApoderado;
+    final dataMap = jsonDecode(response.body);
+    final data = DataApoderado.fromJson(dataMap);
     return data;
   }
 }

@@ -38,8 +38,8 @@ class CollaboratorInfoScreen extends StatelessWidget {
           builder: (context, state) {
             if (state is DataApoderadoLoading) {
               return const Center(child: CircularProgressIndicator());
-            } else if (state is DataApoderadoLoaded) {
-              final apoderado = state.apoderado;
+            } else if (state is DataApoderadoFetchingSuccessfulState) {
+              final apoderado = state.dataApoderado;
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
@@ -135,7 +135,14 @@ class CollaboratorInfoScreen extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 10),
                             ),
                             onPressed: () {
-                              // Acción aceptar
+                              Navigator.pushNamed(
+                                context,
+                                "/postulantlist",
+                                arguments: {
+                                  'apoderadoId': dataApoderadoId,
+                                  'apoderadoName': apoderado.nombres,
+                                },
+                              );
                             },
                           ),
                         ),
@@ -162,7 +169,7 @@ class CollaboratorInfoScreen extends StatelessWidget {
                   ],
                 ),
               );
-            } else if (state is DataApoderadoError) {
+            } else if (state is DataApoderadoFetchingErrorState) {
               return Center(child: Text("Error: ${state.message}"));
             } else {
               return const Center(child: Text("Estado desconocido."));

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scholrflutter/models/apoderado.dart';
+import 'package:scholrflutter/models/postulacion.dart';
 import 'package:scholrflutter/views/CollaboratorInfoScreen.dart';
 
 import 'package:scholrflutter/views/LoginScreen.dart';
@@ -40,19 +41,28 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/CompanySelection': (context) => const CompanySelectionScreen(),
           '/register': (context) => const SignUpScreen(),
-          '/home_apoderado':(context) => const homeApoderado(),
-          '/info_apoderado':(context) {
+          '/home_apoderado': (context) => const homeApoderado(),
+          '/info_apoderado': (context) {
             final dataApoderadoId = ModalRoute.of(context)!.settings.arguments as int;
             return CollaboratorInfoScreen(dataApoderadoId: dataApoderadoId);
           },
-          '/info_postulante':(context) => const PostulanteInfoScreen(),
-          '/solicitud_rechazada':(context) => const SolicitudRechazadaScreen(),
-          '/scholarships':(context) => const ScholarshipsHome(),
+          '/info_postulante': (context) {
+            final postulacion = ModalRoute.of(context)!.settings.arguments as Postulacion;
+            return PostulanteInfoScreen(postulacion: postulacion);
+          },
+          '/solicitud_rechazada': (context) => const SolicitudRechazadaScreen(),
+          '/scholarships': (context) => const ScholarshipsHome(),
           '/scholarshipdetails': (context) {
             final scholarship = ModalRoute.of(context)!.settings.arguments as Scholarship;
             return ScholarshipDetails(scholarship: scholarship);
           },
-          '/postulantlist':(context) => const PostulantList()
+          '/postulantlist': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+            return PostulantList(
+              apoderadoId: args['apoderadoId'] as int,
+              apoderadoName: args['apoderadoName'] as String,
+            );
+          }
         },
       ),
     );

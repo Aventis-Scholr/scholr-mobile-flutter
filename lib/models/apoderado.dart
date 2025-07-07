@@ -40,7 +40,7 @@ class DataApoderado {
     return DataApoderado(
       nombres: json["nombres"] as String,
       apellidos: json["apellidos"] as String,
-      dni: json["dni"] as int,
+      dni: (json["dni"] as num).toInt(),
       fechaNacimiento: DateTime.parse(json["fechaNacimiento"]),
       contacto: Contacto.fromJson(json["contacto"]),
       domicilio: Domicilio.fromJson(json["domicilio"]),
@@ -62,7 +62,7 @@ class Contacto {
   factory Contacto.fromJson(Map<String, dynamic> json) {
     return Contacto(
       correo: json["correo"],
-      celular: json["celular"],
+      celular: (json["celular"] as num).toInt(),
     );
   }
 }
@@ -104,8 +104,8 @@ class CuentaBancaria {
   factory CuentaBancaria.fromJson(Map<String, dynamic> json) {
     return CuentaBancaria(
       entidadBancaria: json["entidadBancaria"],
-      numeroCuenta: json["numeroCuenta"],
-      cci: json["cci"],
+      numeroCuenta: (json["numeroCuenta"] as num).toInt(),
+      cci: (json["cci"] as num).toInt(),
     );
   }
 }
@@ -131,7 +131,7 @@ class InformacionLaboral {
       cargo: json["cargo"],
       sede: json["sede"],
       local: json["local"],
-      ingreso: json["ingreso"],
+      ingreso: (json["ingreso"] as num).toInt(),
     );
   }
 }

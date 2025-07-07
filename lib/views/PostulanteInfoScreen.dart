@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
+import '../models/postulacion.dart';
 
 class PostulanteInfoScreen extends StatelessWidget {
-  const PostulanteInfoScreen({super.key});
+  final Postulacion postulacion;
+
+  const PostulanteInfoScreen({super.key, required this.postulacion});
 
   @override
   Widget build(BuildContext context) {
+    final postulante = postulacion.postulante;
+    final contacto = postulante.contacto;
+    final centroEstudios = postulante.centroEstudios;
+
+    // Formatear fecha de nacimiento
+    final fechaNacimiento = '${postulante.fechaNacimiento.day}/${postulante.fechaNacimiento.month}/${postulante.fechaNacimiento.year}';
+
     return Scaffold(
       backgroundColor: Colors.lightBlue.shade50,
       appBar: AppBar(
@@ -34,12 +44,12 @@ class PostulanteInfoScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 12), // Espacio entre AppBar y título
+              const SizedBox(height: 12),
               // TITULO PRINCIPAL
-              const Center(
+              Center(
                 child: Text(
-                  "Datos de Carlos Quispe",
-                  style: TextStyle(
+                  "Datos de ${postulante.nombres} ${postulante.apellidos}",
+                  style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w600,
                     height: 1.2,
@@ -50,27 +60,34 @@ class PostulanteInfoScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // CAMPOS DE LECTURA
-              readonlyField("Nombres", "Carlos Juan"),
-              readonlyField("Apellidos", "Quispe Zúñiga"),
-              readonlyField("DNI", "63522934"),
-              readonlyField("Fecha de Nacimiento", "16/8/2009"),
+              readonlyField("Nombres", postulante.nombres),
+              readonlyField("Apellidos", postulante.apellidos),
+              readonlyField("DNI", postulante.dni.toString()),
+              readonlyField("Fecha de Nacimiento", fechaNacimiento),
 
               sectionSubtitle("Contacto"),
-              readonlyField("Correo", "carlos.juan@gmail.com"),
-              readonlyField("Celular", "997663547"),
+              readonlyField("Correo", contacto.correo),
+              readonlyField("Celular", contacto.celular.toString()),
 
               sectionSubtitle("Centro de Estudios"),
-              readonlyField("Nombre del C.E.", "Colegio Newton"),
-              readonlyField("Tipo", "Privado"),
-              readonlyField("Nivel", "Secundaria"),
-              readonlyField("Departamento", "Lima"),
-              readonlyField("Provincia", "Lima"),
-              readonlyField("Distrito", "La Molina"),
+              readonlyField("Nombre del C.E.", centroEstudios.nombre),
+              readonlyField("Tipo", centroEstudios.tipo),
+              readonlyField("Nivel", centroEstudios.nivel),
+              readonlyField("Departamento", centroEstudios.departamento),
+              readonlyField("Provincia", centroEstudios.provincia),
+              readonlyField("Distrito", centroEstudios.distrito),
 
               sectionSubtitle("Archivos Adjuntos"),
-              downloadField("DNI.pdf"),
-              downloadField("Acta de Nacimiento.pdf"),
-              downloadField("Cartilla de Notas.pdf"),
+              if (postulacion.postulanteDni != null)
+                downloadField("DNI.pdf"),
+              if (postulacion.postulanteLibretaNotas != null)
+                downloadField("Cartilla de Notas.pdf"),
+              if (postulacion.postulanteConstLogroAprendizaje != null)
+                downloadField("Constancia de Logros.pdf"),
+              if (postulacion.apoderadoDni != null)
+                downloadField("DNI Apoderado.pdf"),
+              if (postulacion.apoderadoDeclaracionJurada != null)
+                downloadField("Declaración Jurada.pdf"),
 
               const SizedBox(height: 8),
 
@@ -103,13 +120,22 @@ class PostulanteInfoScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-
               // BOTONES ACEPTAR Y RECHAZAR
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      label: const Text(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Acción para aceptar
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2A3D66),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text(
                         "Aceptar",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -117,22 +143,22 @@ class PostulanteInfoScreen extends StatelessWidget {
                           color: Colors.white,
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2A3D66),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                      onPressed: () {
-                        // Acción para aceptar
-                      },
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      label: const Text(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Acción para rechazar
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text(
                         "Rechazar",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -140,16 +166,6 @@ class PostulanteInfoScreen extends StatelessWidget {
                           color: Colors.white,
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2A3D66),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                      onPressed: () {
-                        // Acción para rechazar
-                      },
                     ),
                   ),
                 ],
@@ -174,7 +190,7 @@ class PostulanteInfoScreen extends StatelessWidget {
           labelText: label,
           border: const OutlineInputBorder(),
           filled: true,
-          fillColor: const Color(0xFFE0E0E0), // fondo gris claro
+          fillColor: const Color(0xFFE0E0E0),
         ),
       ),
     );
