@@ -1,133 +1,154 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/AcceptanceBloc.dart';
+import '../repository/AcceptanceRepository.dart';
 import '../models/postulacion.dart';
 
 class PostulanteInfoScreen extends StatelessWidget {
   final Postulacion postulacion;
+  final int apoderadoId;
+  final String apoderadoName;
 
-  const PostulanteInfoScreen({super.key, required this.postulacion});
+  const PostulanteInfoScreen({
+    super.key,
+    required this.postulacion,
+    required this.apoderadoId,
+    required this.apoderadoName,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final postulante = postulacion.postulante;
-    final contacto = postulante.contacto;
-    final centroEstudios = postulante.centroEstudios;
+    return BlocProvider(
+      create: (_) => AcceptanceBloc(AcceptanceRepository()),
+      child: Builder(
+        builder: (context) {
+          final postulante = postulacion.postulante;
+          final contacto = postulante.contacto;
+          final centroEstudios = postulante.centroEstudios;
 
-    // Formatear fecha de nacimiento
+          return Scaffold(
+            backgroundColor: Colors.lightBlue.shade50,
+            appBar: AppBar(
+              backgroundColor: const Color(0xFF2A3D66),
+              foregroundColor: Colors.white,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: const Text("Postulante"),
+            ),
+            body: BlocListener<AcceptanceBloc, AcceptanceState>(
+              listener: (context, state) {
+                if (state is AcceptanceSuccess) {
+                  Navigator.of(context).pushReplacementNamed(
+                    '/postulantlist',
+                    arguments: {
+                      'apoderadoId': apoderadoId,
+                      'apoderadoName': apoderadoName,
+                    },
+                  );
+                } else if (state is AcceptanceFailure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.error)),
+                  );
+                }
+              },
+              child: _buildContent(context, postulante, contacto, centroEstudios),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildContent(
+      BuildContext context,
+      Postulante postulante,
+      Contacto contacto,
+      CentroEstudios centroEstudios,
+      ) {
     final fechaNacimiento = '${postulante.fechaNacimiento.day}/${postulante.fechaNacimiento.month}/${postulante.fechaNacimiento.year}';
 
-    return Scaffold(
-      backgroundColor: Colors.lightBlue.shade50,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF2A3D66),
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, size: 30),
-          onPressed: () {},
-        ),
-        title: const Row(
-          children: [
-            SizedBox(width: 16),
-            Text(
-              "Postulante",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              "Datos de ${postulante.nombres} ${postulante.apellidos}",
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+                color: Colors.black,
               ),
             ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          const SizedBox(height: 24),
+
+          readonlyField("Nombres", postulante.nombres),
+          readonlyField("Apellidos", postulante.apellidos),
+          readonlyField("DNI", postulante.dni.toString()),
+          readonlyField("Fecha de Nacimiento", fechaNacimiento),
+
+          sectionSubtitle("Contacto"),
+          readonlyField("Correo", contacto.correo),
+          readonlyField("Celular", contacto.celular.toString()),
+
+          sectionSubtitle("Centro de Estudios"),
+          readonlyField("Nombre del C.E.", centroEstudios.nombre),
+          readonlyField("Tipo", centroEstudios.tipo),
+          readonlyField("Nivel", centroEstudios.nivel),
+          readonlyField("Departamento", centroEstudios.departamento),
+          readonlyField("Provincia", centroEstudios.provincia),
+          readonlyField("Distrito", centroEstudios.distrito),
+
+          sectionSubtitle("Archivos Adjuntos"),
+          if (postulacion.postulanteDni != null) downloadField("DNI.pdf"),
+          if (postulacion.postulanteLibretaNotas != null) downloadField("Cartilla de Notas.pdf"),
+          if (postulacion.postulanteConstLogroAprendizaje != null) downloadField("Constancia de Logros.pdf"),
+          if (postulacion.apoderadoDni != null) downloadField("DNI Apoderado.pdf"),
+          if (postulacion.apoderadoDeclaracionJurada != null) downloadField("Declaración Jurada.pdf"),
+
+          const SizedBox(height: 8),
+
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _downloadAllFiles,
+              icon: const Icon(Icons.download, color: Colors.black),
+              label: const Text(
+                "Descargar todo",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+                side: const BorderSide(color: Colors.black38),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          Row(
             children: [
-              const SizedBox(height: 12),
-              // TITULO PRINCIPAL
-              Center(
-                child: Text(
-                  "Datos de ${postulante.nombres} ${postulante.apellidos}",
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w600,
-                    height: 1.2,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // CAMPOS DE LECTURA
-              readonlyField("Nombres", postulante.nombres),
-              readonlyField("Apellidos", postulante.apellidos),
-              readonlyField("DNI", postulante.dni.toString()),
-              readonlyField("Fecha de Nacimiento", fechaNacimiento),
-
-              sectionSubtitle("Contacto"),
-              readonlyField("Correo", contacto.correo),
-              readonlyField("Celular", contacto.celular.toString()),
-
-              sectionSubtitle("Centro de Estudios"),
-              readonlyField("Nombre del C.E.", centroEstudios.nombre),
-              readonlyField("Tipo", centroEstudios.tipo),
-              readonlyField("Nivel", centroEstudios.nivel),
-              readonlyField("Departamento", centroEstudios.departamento),
-              readonlyField("Provincia", centroEstudios.provincia),
-              readonlyField("Distrito", centroEstudios.distrito),
-
-              sectionSubtitle("Archivos Adjuntos"),
-              if (postulacion.postulanteDni != null)
-                downloadField("DNI.pdf"),
-              if (postulacion.postulanteLibretaNotas != null)
-                downloadField("Cartilla de Notas.pdf"),
-              if (postulacion.postulanteConstLogroAprendizaje != null)
-                downloadField("Constancia de Logros.pdf"),
-              if (postulacion.apoderadoDni != null)
-                downloadField("DNI Apoderado.pdf"),
-              if (postulacion.apoderadoDeclaracionJurada != null)
-                downloadField("Declaración Jurada.pdf"),
-
-              const SizedBox(height: 8),
-
-              // BOTÓN "Descargar todo"
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    // Acción para descargar todo
-                  },
-                  icon: const Icon(Icons.download, color: Colors.black),
-                  label: const Text(
-                    "Descargar todo",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.black38),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // BOTONES ACEPTAR Y RECHAZAR
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Acción para aceptar
-                      },
+              Expanded(
+                child: BlocBuilder<AcceptanceBloc, AcceptanceState>(
+                  builder: (context, state) {
+                    return ElevatedButton(
+                      onPressed: state is AcceptanceLoading
+                          ? null
+                          : () => _showAcceptConfirmationDialog(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2A3D66),
                         shape: RoundedRectangleBorder(
@@ -135,7 +156,9 @@ class PostulanteInfoScreen extends StatelessWidget {
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text(
+                      child: state is AcceptanceLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
                         "Aceptar",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -143,43 +166,49 @@ class PostulanteInfoScreen extends StatelessWidget {
                           color: Colors.white,
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Acción para rechazar
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: const Text(
-                        "Rechazar",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
-
-              const SizedBox(height: 40),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      "/solicitud_rechazada",
+                      arguments: {
+                        'postulacionId': postulacion.id,
+                        'apoderadoId': apoderadoId,
+                        'apoderadoName': apoderadoName,
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    "Rechazar",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 40),
+        ],
       ),
     );
   }
 
-  // CAMPO SOLO LECTURA
   Widget readonlyField(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -196,7 +225,6 @@ class PostulanteInfoScreen extends StatelessWidget {
     );
   }
 
-  // SUBTÍTULOS
   Widget sectionSubtitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 32, bottom: 16),
@@ -212,7 +240,6 @@ class PostulanteInfoScreen extends StatelessWidget {
     );
   }
 
-  // DESCARGA DE ARCHIVOS
   Widget downloadField(String fileName) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -230,13 +257,57 @@ class PostulanteInfoScreen extends StatelessWidget {
             style: const TextStyle(fontSize: 16),
           ),
           IconButton(
-            onPressed: () {
-              // Acción de descarga
-            },
+            onPressed: () => _downloadFile(fileName),
             icon: const Icon(Icons.download),
           ),
         ],
       ),
     );
+  }
+
+  void _showAcceptConfirmationDialog(BuildContext context) {
+    final acceptanceBloc = context.read<AcceptanceBloc>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text("Confirmar Aceptación"),
+          content: const Text("¿Está seguro que desea aceptar esta postulación?"),
+          actions: [
+            TextButton(
+              onPressed: () =>
+              {
+                Navigator.pop(dialogContext),
+                Navigator.of(context).pushReplacementNamed('/postulantlist')
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                Navigator.pop(dialogContext);
+                Navigator.of(context).pushReplacementNamed('/postulantlist');
+                acceptanceBloc.add(AcceptApplicationEvent(postulacion.id));
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _downloadFile(String fileName) {
+    // Implementar lógica de descarga para un archivo específico
+    print("Descargando archivo: $fileName");
+  }
+
+  void _downloadAllFiles() {
+    // Implementar lógica para descargar todos los archivos
+    print("Descargando todos los archivos adjuntos");
   }
 }
