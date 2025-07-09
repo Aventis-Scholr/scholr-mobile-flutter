@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../bloc/AcceptanceBloc.dart';
 import '../repository/AcceptanceRepository.dart';
 import '../models/postulacion.dart';
@@ -106,18 +107,23 @@ class PostulanteInfoScreen extends StatelessWidget {
           readonlyField("Distrito", centroEstudios.distrito),
 
           sectionSubtitle("Archivos Adjuntos"),
-          if (postulacion.postulanteDni != null) downloadField("DNI.pdf"),
-          if (postulacion.postulanteLibretaNotas != null) downloadField("Cartilla de Notas.pdf"),
-          if (postulacion.postulanteConstLogroAprendizaje != null) downloadField("Constancia de Logros.pdf"),
-          if (postulacion.apoderadoDni != null) downloadField("DNI Apoderado.pdf"),
-          if (postulacion.apoderadoDeclaracionJurada != null) downloadField("Declaración Jurada.pdf"),
+          if (postulacion.postulanteDni != null)
+            downloadField("DNI.pdf", postulacion.postulanteDni!,context),
+          if (postulacion.postulanteLibretaNotas != null)
+            downloadField("Cartilla de Notas.pdf", postulacion.postulanteLibretaNotas!,context),
+          if (postulacion.postulanteConstLogroAprendizaje != null)
+            downloadField("Constancia de Logros.pdf", postulacion.postulanteConstLogroAprendizaje!,context),
+          if (postulacion.apoderadoDni != null)
+            downloadField("DNI Apoderado.pdf", postulacion.apoderadoDni!,context),
+          if (postulacion.apoderadoDeclaracionJurada != null)
+            downloadField("Declaración Jurada.pdf", postulacion.apoderadoDeclaracionJurada!,context),
 
           const SizedBox(height: 8),
 
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: _downloadAllFiles,
+              onPressed: () => _downloadAllFiles(context),
               icon: const Icon(Icons.download, color: Colors.black),
               label: const Text(
                 "Descargar todo",
@@ -240,7 +246,7 @@ class PostulanteInfoScreen extends StatelessWidget {
     );
   }
 
-  Widget downloadField(String fileName) {
+  Widget downloadField(String fileName, String url, BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -252,17 +258,58 @@ class PostulanteInfoScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            fileName,
-            style: const TextStyle(fontSize: 16),
+          Expanded(
+            child: Text(
+              fileName,
+              style: const TextStyle(fontSize: 16),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           IconButton(
-            onPressed: () => _downloadFile(fileName),
+            onPressed: () async {
+              try {
+                await _launchUrl(url, context);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al abrir el archivo: ${e.toString()}'),
+                    ),
+                  );
+                }
+              }
+            },
             icon: const Icon(Icons.download),
+            tooltip: 'Descargar archivo',
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _launchUrl(String url, BuildContext context) async {
+    final uri = Uri.parse(url);
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No se pudo abrir el enlace: ${e.toString()}'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      debugPrint('Error launching URL: $e');
+    }
   }
 
   void _showAcceptConfirmationDialog(BuildContext context) {
@@ -279,18 +326,12 @@ class PostulanteInfoScreen extends StatelessWidget {
           content: const Text("¿Está seguro que desea aceptar esta postulación?"),
           actions: [
             TextButton(
-              onPressed: () =>
-              {
-                Navigator.pop(dialogContext),
-                Navigator.of(context).pushReplacementNamed('/postulantlist')
-              },
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text("Cancelar"),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                Navigator.pop(dialogContext);
-                Navigator.of(context).pushReplacementNamed('/postulantlist');
                 acceptanceBloc.add(AcceptApplicationEvent(postulacion.id));
               },
               child: const Text("Aceptar"),
@@ -301,13 +342,54 @@ class PostulanteInfoScreen extends StatelessWidget {
     );
   }
 
-  void _downloadFile(String fileName) {
-    // Implementar lógica de descarga para un archivo específico
-    print("Descargando archivo: $fileName");
-  }
+  void _downloadAllFiles(BuildContext context) {
+    final files = [
+      if (postulacion.postulanteDni != null)
+        {'name': 'DNI.pdf', 'url': postulacion.postulanteDni!},
+      if (postulacion.postulanteLibretaNotas != null)
+        {'name': 'Cartilla de Notas.pdf', 'url': postulacion.postulanteLibretaNotas!},
+      if (postulacion.postulanteConstLogroAprendizaje != null)
+        {'name': 'Constancia de Logros.pdf', 'url': postulacion.postulanteConstLogroAprendizaje!},
+      if (postulacion.apoderadoDni != null)
+        {'name': 'DNI Apoderado.pdf', 'url': postulacion.apoderadoDni!},
+      if (postulacion.apoderadoDeclaracionJurada != null)
+        {'name': 'Declaración Jurada.pdf', 'url': postulacion.apoderadoDeclaracionJurada!},
+    ];
 
-  void _downloadAllFiles() {
-    // Implementar lógica para descargar todos los archivos
-    print("Descargando todos los archivos adjuntos");
+    if (files.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No hay archivos para descargar')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Descargar todos los archivos'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Se abrirán todas las descargas en el navegador:'),
+              const SizedBox(height: 16),
+              ...files.map((file) => ListTile(
+                title: Text(file['name']!),
+                trailing: IconButton(
+                  icon: const Icon(Icons.download),
+                  onPressed: () => _launchUrl(file['url']!, context),
+                ),
+              )).toList(),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

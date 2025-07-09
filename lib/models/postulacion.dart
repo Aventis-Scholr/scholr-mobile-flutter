@@ -4,11 +4,11 @@ class Postulacion {
   final String status;
   final int scholarshipId;
   final Postulante postulante;
-  final String? postulanteDni;
-  final String? postulanteLibretaNotas;
-  final String? postulanteConstLogroAprendizaje;
-  final String? apoderadoDni;
-  final String? apoderadoDeclaracionJurada;
+  final String? postulanteDni; // Esto es un link de descarga
+  final String? postulanteLibretaNotas; // Esto es un link de descarga
+  final String? postulanteConstLogroAprendizaje; // Esto es un link de descarga
+  final String? apoderadoDni; // Esto es un link de descarga
+  final String? apoderadoDeclaracionJurada; // Esto es un link de descarga
   final String? reporte;
 
   Postulacion({
