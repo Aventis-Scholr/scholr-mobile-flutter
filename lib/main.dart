@@ -55,8 +55,12 @@ class MyApp extends StatelessWidget {
             );
           },
           '/solicitud_rechazada': (context) {
-            final postulacionId = ModalRoute.of(context)!.settings.arguments as int;
-            return SolicitudRechazadaScreen(postulacionId: postulacionId);
+            final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+            return SolicitudRechazadaScreen(
+              postulacionId: args['postulacionId'] as int,
+              apoderadoId: args['apoderadoId'] as int,
+              apoderadoName: args['apoderadoName'] as String,
+            );
           },
           '/scholarships': (context) => const ScholarshipsHome(),
           '/scholarshipdetails': (context) {

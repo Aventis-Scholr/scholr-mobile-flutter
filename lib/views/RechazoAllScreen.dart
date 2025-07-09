@@ -1,34 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/RechazoBloc.dart';
+import 'package:scholrflutter/models/scholarship.dart';
+import 'package:scholrflutter/views/ScholarshipDetails.dart';
+import '../bloc/RechazoAllBloc.dart';
 import '../components/CustomAppBar.dart';
-import '../repository/RechazoRepository.dart';
+import '../repository/RechazoAllRepository.dart';
 
-class SolicitudRechazadaScreen extends StatelessWidget {
-  final int postulacionId;
+class RechazoAllScreen extends StatelessWidget {
   final int apoderadoId;
-  final String apoderadoName;
   final TextEditingController _reporteController = TextEditingController();
 
-  SolicitudRechazadaScreen({
-    super.key,
-    required this.postulacionId,
-    required this.apoderadoId,
-    required this.apoderadoName,
-  });
+  RechazoAllScreen({super.key, required this.apoderadoId});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => RechazoBloc(RechazoRepository()),
+      create: (context) => RechazoAllBloc(RechazoAllRepository()),
       child: Scaffold(
         backgroundColor: Colors.lightBlue.shade50,
-        appBar: CustomAppBar(titleText: 'Rechazo'),
-        body: BlocListener<RechazoBloc, RechazoState>(
+        appBar: CustomAppBar(titleText: 'Rechazo Masivo'),
+        body: BlocListener<RechazoAllBloc, RechazoAllState>(
           listener: (context, state) {
-            if (state is RechazoSuccess) {
+            if (state is RechazoAllSuccess) {
               _mostrarDialogoExito(context);
-            } else if (state is RechazoFailure) {
+            } else if (state is RechazoAllFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.error)),
               );
@@ -43,7 +38,7 @@ class SolicitudRechazadaScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   const Center(
                     child: Text(
-                      "Rechazo de solicitud",
+                      "Rechazo masivo de postulaciones",
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w600,
@@ -75,7 +70,7 @@ class SolicitudRechazadaScreen extends StatelessWidget {
                             controller: _reporteController,
                             maxLines: 15,
                             decoration: const InputDecoration(
-                              hintText: 'Especifique las razones del rechazo de la solicitud.',
+                              hintText: 'Especifique las razones del rechazo de todas las postulaciones.',
                               border: OutlineInputBorder(),
                               filled: true,
                               fillColor: Colors.white,
@@ -90,12 +85,12 @@ class SolicitudRechazadaScreen extends StatelessWidget {
                   const SizedBox(height: 72),
 
                   Center(
-                    child: BlocBuilder<RechazoBloc, RechazoState>(
+                    child: BlocBuilder<RechazoAllBloc, RechazoAllState>(
                       builder: (context, state) {
                         return SizedBox(
                           width: 130,
                           child: ElevatedButton(
-                            onPressed: state is RechazoLoading
+                            onPressed: state is RechazoAllLoading
                                 ? null
                                 : () {
                               final reporte = _reporteController.text.trim();
@@ -105,9 +100,9 @@ class SolicitudRechazadaScreen extends StatelessWidget {
                                 );
                                 return;
                               }
-                              context.read<RechazoBloc>().add(
-                                RechazarPostulacionEvent(
-                                  postulacionId: postulacionId,
+                              context.read<RechazoAllBloc>().add(
+                                RechazarAllPostulacionesEvent(
+                                  apoderadoId: apoderadoId,
                                   reporte: reporte,
                                 ),
                               );
@@ -119,7 +114,7 @@ class SolicitudRechazadaScreen extends StatelessWidget {
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 10),
                             ),
-                            child: state is RechazoLoading
+                            child: state is RechazoAllLoading
                                 ? const CircularProgressIndicator(color: Colors.white)
                                 : const Text(
                               "Enviar",
@@ -152,21 +147,29 @@ class SolicitudRechazadaScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           title: const Text(
-            "Solicitud rechazada",
+            "Postulaciones rechazadas",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          content: const Text("La solicitud ha sido rechazada exitosamente."),
+          content: const Text("Todas las postulaciones han sido rechazadas exitosamente."),
           actions: [
             TextButton(
               onPressed: () {
+                final route = ModalRoute.of(context);
+                final arguments = route?.settings.arguments as Map<String, dynamic>?;
+
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                // Regresar a /postulantlist
-                Navigator.of(context).pushReplacementNamed('/postulantlist', arguments: {
-                  "apoderadoId": apoderadoId,
-                  "apoderadoName": apoderadoName
-                });
+                Navigator.of(context).pop(); // Regresar a la pantalla anterior
+
+                if (arguments != null) {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => ScholarshipDetailsView(
+                        scholarship: arguments["scholarship"] as Scholarship,
+                      ),
+                    ),
+                  );
+                }
               },
               child: const Text(
                 "Volver",

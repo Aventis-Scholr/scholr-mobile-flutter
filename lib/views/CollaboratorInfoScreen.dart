@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/DataApoderadoBloc.dart';
+import '../components/CustomAppBar.dart';
+import 'RechazoAllScreen.dart';
 
 class CollaboratorInfoScreen extends StatelessWidget {
   final int dataApoderadoId;
@@ -13,27 +15,7 @@ class CollaboratorInfoScreen extends StatelessWidget {
       create: (context) => DataApoderadoBloc()..add(DataApoderadoInitialFetchEvent(dataApoderadoId)),
       child: Scaffold(
         backgroundColor: Colors.lightBlue.shade50,
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF2A3D66),
-          foregroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.menu, size: 30),
-            onPressed: () {},
-          ),
-          title: const Row(
-            children: [
-              SizedBox(width: 16),
-              Text(
-                "Colaborador",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
+        appBar: CustomAppBar(titleText: 'Colaborador'),
         body: BlocBuilder<DataApoderadoBloc, DataApoderadoState>(
           builder: (context, state) {
             if (state is DataApoderadoLoading) {
@@ -159,7 +141,12 @@ class CollaboratorInfoScreen extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 10),
                             ),
                             onPressed: () {
-                              // Acción rechazar
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RechazoAllScreen(apoderadoId: dataApoderadoId),
+                                ),
+                              );
                             },
                           ),
                         ),
